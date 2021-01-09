@@ -1,12 +1,13 @@
 package main
 
 import (
-	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
+
+/*
+// if you tests are growing you can move the functions newMockApplication, newTestHTTPServer and mockGet to a separate file
 
 func newMockApplication() *application {
 	return &application{
@@ -16,11 +17,16 @@ func newMockApplication() *application {
 }
 
 func newTestHTTPServer(a *application) *httptest.Server {
+	// NewTLSServer function takes an "http.Handler" object and returns an test server instance
 	ts := httptest.NewTLSServer(a.loadRoutes())
 	return ts
 }
 
 func mockGet(t *testing.T, ts *httptest.Server, url string) (status int, headers http.Header, body []byte) {
+
+	// ts.Client().Get() method to make requests against our test server
+	// we don't know under which port our test server is running. It picks up a random port.
+
 	rs, err := ts.Client().Get(ts.URL + url)
 	status = rs.StatusCode
 	headers = rs.Header
@@ -32,6 +38,7 @@ func mockGet(t *testing.T, ts *httptest.Server, url string) (status int, headers
 	}
 	return
 }
+*/
 
 func TestPing(t *testing.T) {
 	// rr is an http.ResponseWriter object that records the response returned by the handler
@@ -58,11 +65,14 @@ func TestPing(t *testing.T) {
 
 // End 2 End testing example
 func TestE2E(t *testing.T) {
-	a := newMockApplication()
+	a := newTestApplication()
 
-	ts := newTestHTTPServer(a)
+	ts := newTestHTTPServer(a.loadRoutes())
+	// Make sure you close the test server instance by end of the tests.
 	defer ts.Close()
 
-	status, _, _ := mockGet(t, ts, "/ping")
-	t.Log(status)
+	statusCode, body, headers := testHTTPGet(t, "/ping", ts)
+	t.Log(statusCode)
+	t.Log(string(body))
+	t.Log(headers)
 }
